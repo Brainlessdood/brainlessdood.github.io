@@ -1,0 +1,9 @@
+.mainImageContainer{
+    background-color: transparent;
+    display: flex;
+    flex-direction: column;
+}
+
+.mainImageImage{
+    opacity:1
+}
