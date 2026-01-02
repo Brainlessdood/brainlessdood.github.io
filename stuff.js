@@ -25,7 +25,7 @@ async function onLoad(){
         parsingText = parsingText.substring(characterNameLength);
         characterIndex = parsingText.indexOf(stringToFind);
     }
-    for(var i = 0; i < 8; i ++){
+    for(var i = 0; i < 8; i ++){    //For non-character buttons that appear at the end of the list
         studentNamesWithMemorialLobby.pop();
     }
 
@@ -33,18 +33,19 @@ async function onLoad(){
 
     //Pick random character, fix their name string for getting memorial lobby
     var randomCharacterIndex = Math.floor(Math.random() * studentNamesWithMemorialLobby.length);
-    //randomCharacterIndex = 67;
+    //randomCharacterIndex = 116;
     var randomCharacterName = studentNamesWithMemorialLobby[randomCharacterIndex];
     randomCharacterName = randomCharacterName.replace(/ /g, "_");
     randomCharacterName = randomCharacterName.replace(`\\uff0a`, `＊`)
-    console.log(randomCharacterName);
+    console.log(randomCharacterIndex + " - " + randomCharacterName);
+
+    var wordsInName = randomCharacterName.split(/[^a-zA-Z]+/).filter(Boolean);
 
     //Get & parse character wiki page
     console.log("Fetching character wiki page...");
     var characterWikiPage = await fetch("https://bluearchive.wiki/w/api.php?action=parse&page=" + randomCharacterName + "&prop=text&format=json&origin=*");
-    console.log("Getting text from wiki page...");
     var characterWikiText = await (characterWikiPage.text());
-    console.log("Parsing wiki page text...");
+    //console.log(characterWikiText);
     parsingText = characterWikiText;
     const linkStart = "static.wikitide.net/bluearchivewiki/thumb";
     var linkStartIndex = parsingText.indexOf(linkStart);
@@ -56,8 +57,12 @@ async function onLoad(){
         link = link.substring(0, linkEndIndex);
         parsingText = parsingText.substring(linkStartIndex + linkEndIndex);
         linkStartIndex = parsingText.indexOf(linkStart);
-        //console.log(link);
         if(link.indexOf("Memorial_Lobby") != -1){
+            var wordsInNameThatDontAppearInLink = wordsInName.filter(function(value){return link.indexOf(value) == -1;}).length;
+            if(wordsInNameThatDontAppearInLink > 0){continue;}
+            var wordsInLink = link.substring(link.indexOf("Memorial")).split(/[^a-zA-Z]+/).filter(function(value){return Boolean(value) && ["Memorial", "Lobby", "png", "jpg"].indexOf(value) == -1});
+            var wordsInLinkThatDontAppearInName = wordsInLink.filter(function(value){return !wordsInName.includes(value);}).length;
+            if(wordsInLinkThatDontAppearInName > 0){continue;}
             memorialLobbyImageLink = link;
             break;
         }
