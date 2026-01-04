@@ -2,19 +2,25 @@
     background-color: transparent;
     display: flex;
     flex-direction: column;
-    width: 45%;
+    max-width: 800px;
+    width: 75%;
     position: relative;
     align-self: center;
-    margin:auto;
+    margin: auto;
 }
 
 .mainImageImage{
-    opacity:1
+    opacity:1;
+    width: 100%;
+    height:auto;
+    display:block;
 }
+
 
 .inputBoxDiv{
     background-color: transparent;
     padding: 0%;
+    padding-top: 5px;
     display: block;
     flex-direction: row;
 }

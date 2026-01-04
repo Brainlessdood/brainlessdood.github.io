@@ -3,6 +3,12 @@ var studentNameButtons = [];
 
 var correctStudentThisRound;
 
+var guesses = 0;
+var zoomStartPosition;
+
+const maxGuesses = 3;
+const startingScale = 30;
+
 //Elements
 window.app = {};
 
@@ -12,7 +18,7 @@ async function onLoad(){
     app.mainImage = document.getElementById("mainMemorialLobbyImage");
     app.inputBox = document.getElementById("inputBox");
     app.loadingImage = document.getElementById("loadingImage");
-    app.loadingText = document.getElementById("loadingText");
+    app.loadingText = document.getElementById("loadingText");   
 
     app.loadingImage.src = "LoadingImage_05_en.png";
     app.loadingImage.alt = "Loading image";
@@ -90,11 +96,26 @@ function onInputFieldChanged(){
 }
 
 async function guessCharacter(characterButtonArray){
+    app.inputBox.value = "";
     let loadingToDisplay;
     if(characterButtonArray[1] == correctStudentThisRound){
         loadingToDisplay = ["GuessCorrect.png", "Correct Guess", ""]
     }else{
         loadingToDisplay = ["GuessWrong.png", "Wrong Guess", "Previous lobby: " + correctStudentThisRound];
+        if(guesses < maxGuesses){
+            guesses += 1;
+            let percentageToFailure = guesses/maxGuesses;
+            let scale = startingScale - ((startingScale - 1) * Math.pow(percentageToFailure, 0.25));
+            let zoomPosition = [];
+            let imageDimensions = [app.mainImage.clientWidth, app.mainImage.clientHeight];
+            for(let i = 0; i < 2; i ++){
+                let zoomPos = zoomStartPosition[i] + ((0 - zoomStartPosition[i]) * Math.pow(percentageToFailure, 2));
+                zoomPosition[i] = Math.floor((zoomPos * imageDimensions[i]));
+            }
+            let style = "object-position: " + zoomPosition[0] + "px " + zoomPosition[1] + "px;" + "transform:scale(" + scale + ");";
+            app.mainImage.style = style;
+            return;
+        }
     }
     app.loadingImage.src = loadingToDisplay[0];
     app.loadingImage.alt = loadingToDisplay[1];
@@ -106,6 +127,7 @@ async function initializeGame(){
 
     app.loadingScreen.style.display = "block";
     app.mainScreen.style.display = "none";
+    app.mainImage.src = "";
 
     //Pick random character, fix their name string for getting memorial lobby
     let randomCharacterIndex = Math.floor(Math.random() * studentNamesWithMemorialLobby.length);
@@ -149,15 +171,30 @@ async function initializeGame(){
         return false;
     }
     memorialLobbyImageLink = "https://" + memorialLobbyImageLink.substring(0, memorialLobbyImageLink.indexOf("/thumb")) + memorialLobbyImageLink.substring(memorialLobbyImageLink.indexOf("/thumb") + "/thumb".length);
-    console.log(memorialLobbyImageLink);
 
     app.mainImage.src = memorialLobbyImageLink;
     app.mainImage.alt = randomCharacterName;
 
-    app.inputBox.value = "";
-    onInputFieldChanged();
+    app.mainImage.style = "opacity=0";
 
     app.loadingScreen.style.display = "none";
     app.mainScreen.style.display = "block";
+
+    guesses = 0;
+    zoomStartPosition = [];
+    for(let i = 0; i < 2; i ++){
+        zoomStartPosition[i] = ((Math.random() - 0.5)/0.5);
+        zoomStartPosition[i] = Math.abs(Math.pow(Math.abs(zoomStartPosition[i]), 0.15)) * Math.sign(zoomStartPosition[i]);
+        zoomStartPosition[i] *= 0.25;
+    }
+    console.log(zoomStartPosition);
+    let imageDimensions = [app.mainImage.clientWidth, app.mainImage.clientHeight];
+    let zoomPosition = [];
+    for(let i = 0; i < 2; i ++){
+        zoomPosition[i] = Math.floor(zoomStartPosition[i] * imageDimensions[i]);
+    }
+    app.mainImage.style = "object-position: " + zoomPosition[0] + "px " + zoomPosition[1] + "px;" + "transform:scale(" + startingScale + ");"
+
+    onInputFieldChanged();
     return true;
 }
