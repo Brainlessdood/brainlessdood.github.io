@@ -104,16 +104,7 @@ async function guessCharacter(characterButtonArray){
         loadingToDisplay = ["GuessWrong.png", "Wrong Guess", "Previous lobby: " + correctStudentThisRound];
         if(guesses < maxGuesses){
             guesses += 1;
-            let percentageToFailure = guesses/maxGuesses;
-            let scale = startingScale - ((startingScale - 1) * Math.pow(percentageToFailure, 0.25));
-            let zoomPosition = [];
-            let imageDimensions = [app.mainImage.clientWidth, app.mainImage.clientHeight];
-            for(let i = 0; i < 2; i ++){
-                let zoomPos = zoomStartPosition[i] + ((0 - zoomStartPosition[i]) * Math.pow(percentageToFailure, 2));
-                zoomPosition[i] = Math.floor((zoomPos * imageDimensions[i]));
-            }
-            let style = "object-position: " + zoomPosition[0] + "px " + zoomPosition[1] + "px;" + "transform:scale(" + scale + ");";
-            app.mainImage.style = style;
+            resizeMainImage();
             return;
         }
     }
@@ -187,14 +178,24 @@ async function initializeGame(){
         zoomStartPosition[i] = Math.abs(Math.pow(Math.abs(zoomStartPosition[i]), 0.15)) * Math.sign(zoomStartPosition[i]);
         zoomStartPosition[i] *= 0.25;
     }
-    console.log(zoomStartPosition);
-    let imageDimensions = [app.mainImage.clientWidth, app.mainImage.clientHeight];
-    let zoomPosition = [];
-    for(let i = 0; i < 2; i ++){
-        zoomPosition[i] = Math.floor(zoomStartPosition[i] * imageDimensions[i]);
-    }
-    app.mainImage.style = "object-position: " + zoomPosition[0] + "px " + zoomPosition[1] + "px;" + "transform:scale(" + startingScale + ");"
+    resizeMainImage();
 
     onInputFieldChanged();
     return true;
 }
+
+//Zooms in the main image based on wrong guesses.
+function resizeMainImage(){
+    let percentageToFailure = guesses/maxGuesses;
+    let scale = startingScale - ((startingScale - 1) * Math.pow(percentageToFailure, 0.25));
+    let zoomPosition = [];
+    let imageDimensions = [app.mainImage.clientWidth, app.mainImage.clientHeight];
+    for(let i = 0; i < 2; i ++){
+        let zoomPos = zoomStartPosition[i] + ((0 - zoomStartPosition[i]) * Math.pow(percentageToFailure, 2));
+        zoomPosition[i] = Math.floor(zoomPos * imageDimensions[i]);
+    }
+    let style = "object-position: " + zoomPosition[0] + "px " + zoomPosition[1] + "px;" + "transform:scale(" + scale + ");";
+    app.mainImage.style = style;
+}
+
+window.onresize = resizeMainImage;
